@@ -10,18 +10,20 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (user == null) return res.status(404).send({ message: 'Пользователь не найден'});
+      res.send({ data: user })
+    })
     .catch((err) => {
       if ((req.params.userId.length !== 24) && (err.name === 'CastError')) return res.status(400).send({ message: 'Введен некорректные Id'});
-      if ((req.params.userId.length === 24) && (err.name === 'CastError')) return res.status(404).send({ message: 'Пользователь не найден'});
-      res.status(500).send({ message: 'Что-то пошло не так...' })
+      res.status(500).send({ message: err.message })
     });
 };
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
-  if( ((name.length < 2) || (name.length > 30)) || ((about.length < 2) || (about.length > 30))) return res.status(400).send({ message: 'Длина имени или профессии некорректны' })
+  if( ((name.length < 2) || (name.length > 30)) || ((about.length < 2) || (about.length > 30)) || !name || !about ) return res.status(400).send({ message: 'Длина имени или профессии некорректны' })
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
