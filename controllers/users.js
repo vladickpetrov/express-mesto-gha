@@ -37,8 +37,18 @@ module.exports.createUser = (req, res) => {
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
 
-  if( name.length < 2 || name.length > 30 || about.length < 2 || about.length > 30 ) {
-    return res.status(400).send({ message: 'Некорректные данные: проверьте длину полей' })
+  console.log(name, about);
+
+  if (name !== undefined) {
+    if(name.length < 2 || name.length > 30) {
+      return res.status(400).send({ message: 'Некорректные данные: проверьте длину полей' })
+    }
+  }
+
+  if (about !== undefined) {
+    if(about.length < 2 || about.length > 30 ) {
+      return res.status(400).send({ message: 'Некорректные данные: проверьте длину полей' })
+    }
   }
 
   User.findByIdAndUpdate(req.user._id, { name, about }, {
