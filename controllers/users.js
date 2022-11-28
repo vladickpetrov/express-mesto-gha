@@ -22,8 +22,9 @@ module.exports.getUser = (req, res) => {
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-
-  if( ((name.length < 2) || (name.length > 30)) || ((about.length < 2) || (about.length > 30)) || !name || !about ) return res.status(400).send({ message: 'Длина имени или профессии некорректны' })
+  if(name == undefined || about == undefined || name.length < 2 || name.length > 30 || about.length < 2 || about.length > 30 ) {
+    return res.status(400).send({ message: 'Некорректные данные: наличие всех обязательных полей и их длину' })
+  }
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
