@@ -1,16 +1,15 @@
-{
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es2021": true
-    },
-    "extends": "eslint:recommended",
-    "overrides": [
-    ],
-    "parserOptions": {
-        "ecmaVersion": "latest"
-    },
-    "rules": {
-        "allow": "_id"
-    }
-}
+module.exports = {
+  env: {
+    browser: true,
+    commonjs: true,
+    es2021: true,
+  },
+  extends: 'airbnb-base',
+  overrides: [],
+  parserOptions: {
+    ecmaVersion: 'latest',
+  },
+  rules: {
+    allow: '_id',
+  },
+};
