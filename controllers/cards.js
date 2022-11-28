@@ -11,8 +11,12 @@ module.exports.getCards = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then(() => res.send({ message: 'Карточка успешно удалена' }))
+  .then((cardLikes) => {
+    if (cardLikes == null) return res.status(404).send({ message: 'Карточка не найдена'});
+    res.send({ data: cardLikes })
+  })
     .catch((err) => {
+      if ((req.params.cardId.length !== 24) && (err.name === 'CastError')) return res.status(400).send({ message: 'Введен некорректные CardId'});
       res.status(500).send({ message: 'Что-то пошло не так...' })
     });
 };
@@ -33,9 +37,13 @@ module.exports.likeCard = (req, res) => {
   { $addToSet: { likes: req.user._id } },
   { new: true })
   .populate('_id')
-  .then((cardLikes) => res.send({ data: cardLikes }))
+  .then((cardLikes) => {
+    if (cardLikes == null) return res.status(404).send({ message: 'Карточка не найдена'});
+    res.send({ data: cardLikes })
+  })
     .catch((err) => {
-      res.status(500).send({ message: 'Что-то пошло не так...' })
+      if ((req.params.cardId.length !== 24) && (err.name === 'CastError')) return res.status(400).send({ message: 'Введен некорректные CardId'});
+      res.status(500).send({ message: err.name })
     });
 };
 
@@ -44,8 +52,12 @@ module.exports.dislikeCard = (req, res) => {
   { $pull: { likes: req.user._id } },
   { new: true })
   .populate('_id')
-  .then((cardLikes) => res.send({ data: cardLikes }))
+  .then((cardLikes) => {
+    if (cardLikes == null) return res.status(404).send({ message: 'Карточка не найдена'});
+    res.send({ data: cardLikes })
+  })
   .catch((err) => {
+    if ((req.params.cardId.length !== 24) && (err.name === 'CastError')) return res.status(400).send({ message: 'Введен некорректные CardId'});
     res.status(500).send({ message: 'Что-то пошло не так...' })
   });
 };

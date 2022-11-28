@@ -23,7 +23,7 @@ module.exports.getUser = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   if(name == undefined || about == undefined || name.length < 2 || name.length > 30 || about.length < 2 || about.length > 30 ) {
-    return res.status(400).send({ message: 'Некорректные данные: наличие всех обязательных полей и их длину' })
+    return res.status(400).send({ message: 'Некорректные данные: проверьте наличие всех обязательных полей и их длину' })
   }
 
   User.create({ name, about, avatar })
@@ -36,6 +36,10 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
+
+  if( name.length < 2 || name.length > 30 || about.length < 2 || about.length > 30 ) {
+    return res.status(400).send({ message: 'Некорректные данные: проверьте длину полей' })
+  }
 
   User.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true
