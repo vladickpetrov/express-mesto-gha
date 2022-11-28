@@ -21,7 +21,7 @@ module.exports.getUser = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
-  if( ((name.length >= 2) && (name.length <= 30)) || ((about.length >= 2) && (about.length <= 30))) return res.status(400).send({ message: 'Длина имени или профессии некорректны' })
+  if( ((name.length < 2) || (name.length > 30)) || ((about.length < 2) || (about.length > 30))) return res.status(400).send({ message: 'Длина имени или профессии некорректны' })
 
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
