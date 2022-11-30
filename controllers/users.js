@@ -5,8 +5,6 @@ const {
   ERROR_SERVER,
 } = require('../constants');
 
-/* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }] */
-
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))

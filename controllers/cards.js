@@ -5,12 +5,9 @@ const {
   ERROR_SERVER,
 } = require('../constants');
 
-/* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }] */
-
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .populate('owner')
-    .populate('likes')
+    .populate(['owner', 'likes'])
     .then((cards) => res.send({ data: cards }))
     .catch(() => res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так' }));
 };
@@ -47,14 +44,13 @@ module.exports.likeCard = (req, res) => {
       runValidators: true,
     },
   )
-    .populate('owner')
-    .populate('likes')
-    .then((cardLikes) => {
-      if (cardLikes == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return res.send({ data: cardLikes });
+    .populate(['owner', 'likes'])
+    .then((card) => {
+      if (card == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      return res.send({ likes: card.likes });
     })
     .catch((err) => {
-      if ((req.params.cardId.length !== 24) && (err.name === 'CastError')) return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
+      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
       return res.status(ERROR_SERVER).send({ message: err.name });
     });
 };
@@ -68,14 +64,13 @@ module.exports.dislikeCard = (req, res) => {
       runValidators: true,
     },
   )
-    .populate('owner')
-    .populate('likes')
-    .then((cardLikes) => {
-      if (cardLikes == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return res.send({ data: cardLikes });
+    .populate(['owner', 'likes'])
+    .then((card) => {
+      if (card == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      return res.send({ likes: card.likes });
     })
     .catch((err) => {
-      if ((req.params.cardId.length !== 24) && (err.name === 'CastError')) return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
+      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
       return res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так...' });
     });
 };
