@@ -17,9 +17,9 @@ module.exports.getCards = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then((cardLikes) => {
-      if (cardLikes == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return res.send({ data: cardLikes });
+    .then((card) => {
+      if (card == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
+      return res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
