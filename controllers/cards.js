@@ -1,4 +1,9 @@
 const Card = require('../models/card');
+const {
+  ERROR_NOT_FOUND,
+  ERROR_INCORRECT,
+  ERROR_SERVER,
+} = require('../constants');
 
 /* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }] */
 
@@ -8,7 +13,7 @@ module.exports.getCards = (req, res) => {
     .populate('likes')
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
-      res.status(500).send({ message: err.message })
+      if (err.name === 'CastError') return res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так' });
     });
 };
 
@@ -20,7 +25,7 @@ module.exports.deleteCard = (req, res) => {
   })
     .catch((err) => {
       if (err.name === 'CastError') return res.status(400).send({ message: 'Введен некорректные CardId'});
-      res.status(500).send({ message: 'Что-то пошло не так...' })
+      res.status(500).send({ message: 'Что-то пошло не так...' });
     });
 };
 
