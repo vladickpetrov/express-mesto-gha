@@ -45,6 +45,7 @@ module.exports.updateUser = (req, res) => {
   })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
+      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные Id' });
       if (err.name === 'ValidationError') {
         return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
       }
@@ -57,7 +58,13 @@ module.exports.updateUserAvatar = (req, res) => {
 
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
+    runValidators: true,
   })
     .then((user) => res.send({ avatar: user.avatar }))
-    .catch((err) => res.status(ERROR_SERVER).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
+      }
+      return res.status(ERROR_SERVER).send({ message: err.message });
+    });
 };
