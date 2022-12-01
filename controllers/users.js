@@ -46,9 +46,7 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные Id' });
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
-      }
+      if (err.name === 'ValidationError') return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
       return res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так' });
     });
 };
@@ -60,11 +58,10 @@ module.exports.updateUserAvatar = (req, res) => {
     new: true,
     runValidators: true,
   })
-    .then((user) => res.send({ avatar: user.avatar }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
-      }
+      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные Id' });
+      if (err.name === 'ValidationError') return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
       return res.status(ERROR_SERVER).send({ message: err.message });
     });
 };

@@ -46,7 +46,7 @@ module.exports.likeCard = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return res.send({ likes: card.likes });
+      return res.send({ likes: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
@@ -65,7 +65,7 @@ module.exports.dislikeCard = (req, res) => {
     .populate(['owner', 'likes'])
     .then((card) => {
       if (card == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
-      return res.send({ likes: card.likes });
+      return res.send({ likes: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные CardId' });
