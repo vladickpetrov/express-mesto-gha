@@ -1,42 +1,74 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const User = require('../models/user');
-const {
-  ERROR_NOT_FOUND,
-  ERROR_INCORRECT,
-  ERROR_SERVER,
-} = require('../constants');
+const IncorrectError = require('../errors/incorrect_error');
+const NotFoundError = require('../errors/not_found_error');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => {
-      res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так...' });
-    });
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
-  User.findById(req.params.userId)
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.user._id)
     .then((user) => {
-      if (user == null) return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+      if (user == null) throw new NotFoundError('Пользователь не найден');
       return res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные Id' });
-      return res.status(ERROR_SERVER).send({ message: err.message });
+      if (err.name === 'CastError') throw new IncorrectError('Введен некорректные Id');
+      next(err);
     });
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_INCORRECT).send({ message: 'Введены некорректные данные' });
-      return res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так...' });
+  bcrypt.hash(password, 12)
+    .then((hashPass) => {
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hashPass,
+      })
+        .then((user) => res.send({ data: user }))
+        .catch((err) => {
+          if (err.name === 'ValidationError') throw new IncorrectError('Введены некорректные данные');
+          next(err);
+        });
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.fingUserByLogin(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'e5fbda01a7238de9952c8df1afe7153f89d10ae6f0cd4f5202819b2b0b185575',
+        { expiresIn: '7d' },
+      );
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      })
+        .end();
+    })
+    .catch(next);
+};
+
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, {
@@ -45,13 +77,13 @@ module.exports.updateUser = (req, res) => {
   })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные Id' });
-      if (err.name === 'ValidationError') return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
-      return res.status(ERROR_SERVER).send({ message: 'Что-то пошло не так' });
+      if (err.name === 'CastError') throw new IncorrectError('Введен некорректные Id');
+      if (err.name === 'ValidationError') throw new IncorrectError('Введены некорректные данные');
+      next(err);
     });
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, {
@@ -60,8 +92,8 @@ module.exports.updateUserAvatar = (req, res) => {
   })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(ERROR_INCORRECT).send({ message: 'Введен некорректные Id' });
-      if (err.name === 'ValidationError') return res.status(ERROR_INCORRECT).send({ message: 'Данные некорректны' });
-      return res.status(ERROR_SERVER).send({ message: err.message });
+      if (err.name === 'CastError') throw new IncorrectError('Введен некорректные Id');
+      if (err.name === 'ValidationError') throw new IncorrectError('Введены некорректные данные');
+      next(err);
     });
 };
