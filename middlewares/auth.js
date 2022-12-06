@@ -3,14 +3,13 @@ require('dotenv').config();
 const IncorrectError = require('../errors/incorrect_error');
 
 module.exports = (req, res, next) => {
-  const { authToken } = req.headers;
+  const { authorization } = req.headers;
 
-  if (!authToken || !authToken.startsWith('Bearer ')) {
-    const err = new IncorrectError('Необходима авторизация');
-    next(err);
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    next(new IncorrectError('Необходима авторизация'));
   }
 
-  const token = authToken.replace('Bearer ', '');
+  const token = authorization.replace('Bearer ', '');
   let payload;
 
   try {

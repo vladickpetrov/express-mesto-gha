@@ -9,7 +9,7 @@ const AlredyExistsError = require('../errors/already_exists_error');
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.getUser = (req, res, next) => {
@@ -44,11 +44,11 @@ module.exports.createUser = (req, res, next) => {
       })
         .then((user) => res.send({ data: user }))
         .catch((err) => {
-          if (err.name === 'ValidationError') throw new IncorrectError('Введены некорректные данные');
-          if (err.code === 11000) throw new AlredyExistsError('Введены некорректные данные');
-          next(err);
+          if (err.name === 'ValidationError') next(new IncorrectError('Введены некорректные данные'));
+          if (err.code === 11000) next(new AlredyExistsError('Пользователь уже существует'));
         });
-    });
+    })
+    .catch((err) => next(err));
 };
 
 module.exports.login = (req, res, next) => {
@@ -67,7 +67,7 @@ module.exports.login = (req, res, next) => {
       })
         .end();
     })
-    .catch(next);
+    .catch((err) => next(err));
 };
 
 module.exports.updateUser = (req, res, next) => {
