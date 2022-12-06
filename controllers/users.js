@@ -4,6 +4,7 @@ require('dotenv').config();
 const User = require('../models/user');
 const IncorrectError = require('../errors/incorrect_error');
 const NotFoundError = require('../errors/not_found_error');
+const AlredyExistsError = require('../errors/already_exists_error');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -44,6 +45,7 @@ module.exports.createUser = (req, res, next) => {
         .then((user) => res.send({ data: user }))
         .catch((err) => {
           if (err.name === 'ValidationError') throw new IncorrectError('Введены некорректные данные');
+          if (err.code === 11000) throw new AlredyExistsError('Введены некорректные данные');
           next(err);
         });
     });
