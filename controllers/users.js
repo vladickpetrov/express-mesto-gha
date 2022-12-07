@@ -54,7 +54,15 @@ module.exports.createUser = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.fingUserByLogin(email, password)
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) Promise.reject(new IncorrectError('Неправильная почта или пароль'));
+      return bcrypt.compare(password, user.password)
+        .then((match) => {
+          if (!match) Promise.reject(new IncorrectError('Неправильная почта или пароль'));
+          return user;
+        });
+    })
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
