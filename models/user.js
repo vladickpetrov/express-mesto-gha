@@ -26,9 +26,9 @@ const userSchema = mongoose.Schema({
     validate: (text) => valid.isEmail(text),
   },
   password: {
-    select: false,
     type: String,
     required: true,
+    select: false,
   },
 });
 

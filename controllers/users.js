@@ -41,8 +41,8 @@ module.exports.createUser = (req, res, next) => {
         avatar,
         email,
         password: hashPass,
-      }).select('-password')
-        .then((user) => res.send({ data: user }))
+      })
+        .then((user) => res.send({ data: { email: user.email, _id: user._id } }))
         .catch((err) => {
           if (err.name === 'ValidationError') next(new IncorrectError('Введены некорректные данные'));
           if (err.code === 11000) next(new AlredyExistsError('Пользователь уже существует'));
