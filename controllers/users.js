@@ -42,7 +42,11 @@ module.exports.createUser = (req, res, next) => {
         email,
         password: hashPass,
       })
-        .then((user) => res.send({ data: { email: user.email, _id: user._id } }))
+        .then((user) => {
+          const newUser = user.toObject();
+          delete newUser.password;
+          res.send(newUser);
+        })
         .catch((err) => {
           if (err.name === 'ValidationError') next(new IncorrectError('Введены некорректные данные'));
           if (err.code === 11000) next(new AlredyExistsError('Пользователь уже существует'));
@@ -69,6 +73,7 @@ module.exports.login = (req, res, next) => {
         'e5fbda01a7238de9952c8df1afe7153f89d10ae6f0cd4f5202819b2b0b185575',
         { expiresIn: '7d' },
       );
+      res.send({ data: user });
       res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
         httpOnly: true,
