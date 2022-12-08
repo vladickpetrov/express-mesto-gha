@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const IncorrectError = require('../errors/incorrect_error');
 const NotFoundError = require('../errors/not_found_error');
+const PermissionError = require('../errors/permission_error');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -10,14 +11,22 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndDelete(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
-      if (card.owner !== req.user._id) throw new IncorrectError('Вы можете удалить только свою карточку');
-      if (card == null) throw new NotFoundError('Карточка не найдена');
-      return res.send({ data: card });
+      if (card.owner !== req.user._id) throw new PermissionError('Вы можете удалить только свою карточку');
+    })
+    .then(() => {
+      Card.findByIdAndDelete(req.params.cardId)
+        .then((card) => {
+          if (card == null) throw new NotFoundError('Карточка не найдена');
+          return res.send({ data: card });
+        })
+        .catch((err) => {
+          if (err.name === 'CastError') throw new IncorrectError('Введен некорректные CardId');
+          next(err);
+        });
     })
     .catch((err) => {
-      if (err.name === 'CastError') throw new IncorrectError('Введен некорректные CardId');
       next(err);
     });
 };
