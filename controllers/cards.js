@@ -13,8 +13,8 @@ module.exports.getCards = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
-      if (card.owner.toString() !== req.user._id) throw new PermissionError('Вы можете удалить только свою карточку');
       if (card == null) throw new NotFoundError('Карточка не найдена');
+      if (card.owner.toString() !== req.user._id) throw new PermissionError('Вы можете удалить только свою карточку');
     })
     .then(() => {
       Card.findByIdAndDelete(req.params.cardId)
