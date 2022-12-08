@@ -24,6 +24,18 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+module.exports.getUserbyId = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (user == null) throw new NotFoundError('Пользователь не найден');
+      return res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') throw new IncorrectError('Введен некорректные Id');
+      next(err);
+    });
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     name,
