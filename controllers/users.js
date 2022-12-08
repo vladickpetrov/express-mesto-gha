@@ -43,9 +43,7 @@ module.exports.createUser = (req, res, next) => {
         password: hashPass,
       })
         .then((user) => {
-          const newUser = user.toObject();
-          delete newUser.password;
-          res.send(newUser);
+          res.send({ user });
         })
         .catch((err) => {
           if (err.name === 'ValidationError') next(new IncorrectError('Введены некорректные данные'));
@@ -60,10 +58,10 @@ module.exports.login = (req, res, next) => {
 
   User.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) Promise.reject(new IncorrectError('Неправильная почта или пароль'));
+      if (!user) next(new IncorrectError('Неправильная почта или пароль'));
       return bcrypt.compare(password, user.password)
         .then((match) => {
-          if (!match) Promise.reject(new IncorrectError('Неправильная почта или пароль'));
+          if (!match) next(new IncorrectError('Неправильная почта или пароль'));
           return user;
         });
     })
